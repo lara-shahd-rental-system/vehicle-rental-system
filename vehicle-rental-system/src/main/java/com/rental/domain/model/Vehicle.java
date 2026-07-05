@@ -4,7 +4,7 @@ public class Vehicle {
 
 	private String vehicleId ;
 	private String brand  ;
-	private   String model ;
+	private String model ;
 	private  int year ;
 	private  VehicleStatus status ;
 	 
@@ -13,37 +13,39 @@ public class Vehicle {
 		this.brand=brand;
 		this.model=model;
 		this.year=year;
+		status = VehicleStatus.AVAILABLE;
 	 }
 	
-	public String getvehicleId() {
+	public String getVehicleId() {
 		
 		return 	vehicleId;
-		
 	}
-	public String getbrand()
+	public String getBrand()
 {
 		
 		return 	brand;
 		
 	}
-	public String getmodel(){
+	public String getModel(){
 		
 		return 	model;
 		
 	}
-	public	int getyear(){
+	public	int getYear(){
 		
 		return 	year;
 		
 	}
-public VehicleStatus getstatus(){
+public VehicleStatus getStatus(){
 	
 	return 	status;
 	
 }
 
 
-public void setStatus() {
+public void setStatus(VehicleStatus status) {
+	this.status=status;
+
 	
 	
 }
