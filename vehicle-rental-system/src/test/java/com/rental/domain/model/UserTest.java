@@ -59,117 +59,130 @@ public class UserTest
     @Test
     public void testConstructor_WithNullUsername_ThrowsException() 
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             new User(null, "pass123", "ENGINEER");
         });
+        assertEquals("Username cannot be null or empty", exception.getMessage());
     }
      // edge cases********************************************************************
     
     @Test          // NULL PASSWORD 
     public void testConstructor_WithNullPassword_ThrowsException() 
     {
-        assertThrows(IllegalArgumentException.class, () ->
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
         {
             new User("lara123", null, "ENGINEER");
         });
+        assertEquals("Password cannot be null or empty", exception.getMessage());
     }
 
     @Test          // NULL TEST 
     public void testConstructor_WithNullRole_ThrowsException() 
     
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             new User("lara123", "pass123", null);
         });
+        assertEquals("Role cannot be null or empty", exception.getMessage());
     }
 
     @Test          // EMPTY TEST 
     public void testConstructor_WithEmptyUsername_ThrowsException() 
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             new User("", "pass123", "ENGINEER");
         });
+        assertEquals("Username cannot be null or empty", exception.getMessage());
     }
 
     @Test           // EMPTY TEST WITH "" 
     public void testConstructor_WithBlankUsername_ThrowsException() 
     {
-        assertThrows(IllegalArgumentException.class, () -> 
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> 
         {
             new User("   ", "pass123", "ENGINEER");
         });
+        assertEquals("Username cannot be null or empty", exception.getMessage());
     }
     
     
     @Test             // EMPTY PASSWORD
     public void testConstructor_WithEmptyPassword_ThrowsException() 
     {
-        assertThrows(IllegalArgumentException.class, () ->
+        Exception exception = assertThrows(IllegalArgumentException.class, () ->
         {
             new User("lara123", "", "ENGINEER");
         });
+        assertEquals("Password cannot be null or empty", exception.getMessage());
     }
    
     @Test           // EMPTY ROLE
     public void testConstructor_WithEmptyRole_ThrowsException() 
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             new User("lara123", "pass123", "");
         });
+        assertEquals("Role cannot be null or empty", exception.getMessage());
     }
     
  
     @Test                      // CHECKS NO NULL VALUES IN SETUSERNAME
     public void testSetUsername_WithNull_ThrowsException() 
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             user.setUsername(null);
         });
+        assertEquals("Username cannot be null or empty", exception.getMessage());
     }
 
    
     @Test                     // CHECKS NO EMPTY VALUES IN SETUSERNAME
     public void testSetUsername_WithEmpty_ThrowsException() 
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             user.setUsername("");
         });
+        assertEquals("Username cannot be null or empty", exception.getMessage());
     }
 
    
     @Test                    // CHECKS NO NULL VALUES IN SETPASSWORD
     public void testSetPassword_WithNull_ThrowsException() 
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             user.setPassword(null);
         });
+        assertEquals("Password cannot be null or empty", exception.getMessage());
     }
 
     //  // CHECKS NO EMPTY VALUES IN SETPASSWORD
     @Test
     public void testSetPassword_WithEmpty_ThrowsException()
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             user.setPassword("");
         });
+        assertEquals("Password cannot be null or empty", exception.getMessage());
     }
 
     //  // CHECKS NO NULL VALUES IN SETROLE
     @Test
     public void testSetRole_WithNull_ThrowsException()
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             user.setRole(null);
         });
+        assertEquals("Role cannot be null or empty", exception.getMessage());
     }
 
     //  // CHECKS NO EMPTY VALUES IN SETROLE
     @Test
     public void testSetRole_WithEmpty_ThrowsException() 
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             user.setRole("");
         });
+        assertEquals("Role cannot be null or empty", exception.getMessage());
     }
     
 }

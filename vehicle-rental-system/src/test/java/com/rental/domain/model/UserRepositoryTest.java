@@ -49,9 +49,10 @@ public class UserRepositoryTest
     @Test
     public void testAddUser_WithNullUser_ThrowsException()
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             userRepository.addUser(null) ;
         }) ;
+        assertEquals("User cannot be null", exception.getMessage()) ;
     }
 
     // (DUPLICATION )Try to add a second user with the same username as an existing one. Should throw an exception.
@@ -61,36 +62,40 @@ public class UserRepositoryTest
         userRepository.addUser(user) ;
         User duplicateUser = new User("lara123", "otherPass", "MANAGER") ;
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             userRepository.addUser(duplicateUser) ;
         }) ;
+        assertEquals("Username already exists: lara123", exception.getMessage()) ;
     }
 
     // Search using a null username. Should throw an exception.
     @Test
     public void testFindByUsername_WithNull_ThrowsException()
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             userRepository.findByUsername(null) ;
         }) ;
+        assertEquals("Username cannot be null or empty", exception.getMessage()) ;
     }
 
     // Search using an empty username (""). Should throw an exception.
     @Test
     public void testFindByUsername_WithEmpty_ThrowsException()
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             userRepository.findByUsername("") ;
         }) ;
+        assertEquals("Username cannot be null or empty", exception.getMessage()) ;
     }
 
     // Search using a username that is just spaces ("   "). Should throw an exception.
     @Test
     public void testFindByUsername_WithBlank_ThrowsException()
     {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             userRepository.findByUsername("   ") ;
         }) ;
+        assertEquals("Username cannot be null or empty", exception.getMessage()) ;
     }
 
     // IMPRTANT ** Add two different users, and make sure both can be found correctly (no mixing up data)// check the map work well
