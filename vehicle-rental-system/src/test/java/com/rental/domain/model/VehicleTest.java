@@ -158,7 +158,7 @@ public class VehicleTest {
 	public void testSetStatusNull() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			vehicle.setStatus(null);
-		});
+		}); 
 	}
 
 	/** Tests renting an available vehicle. */
