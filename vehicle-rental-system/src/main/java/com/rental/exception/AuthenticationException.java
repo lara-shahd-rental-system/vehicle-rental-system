@@ -5,8 +5,7 @@ package com.rental.exception;
  */
 
 
-public class AuthenticationException extends Exception {
-
+public class AuthenticationException extends RuntimeException {
     /**
      * Constructs a new AuthenticationException with the given message 
      *

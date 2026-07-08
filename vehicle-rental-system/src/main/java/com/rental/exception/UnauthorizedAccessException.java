@@ -8,8 +8,8 @@ package com.rental.exception;
  */ 
 
 
-public class UnauthorizedAccessException extends Exception 
-{
+public class UnauthorizedAccessException extends RuntimeException {
+	
 
     /** 
      *   Constructs a new UnauthorizedAccessException with the given message

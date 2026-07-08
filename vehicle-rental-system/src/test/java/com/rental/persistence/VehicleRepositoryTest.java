@@ -42,7 +42,7 @@ class VehicleRepositoryTest {
 		repository.addVehicle(vehicle3);
 	 assertEquals(3, repository.findAll().size());
 
-
+ 
 		
 		
 	}
