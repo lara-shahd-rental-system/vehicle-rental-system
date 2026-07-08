@@ -95,5 +95,60 @@ class VehicleServiceTest {
 		});
 
 	}
+	
+	@Test
+	void testMarkAsRentedSuccess() {
+		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020);
+		vehicleRepository.addVehicle(v1);
+		 vehicleService.markAsRented("V001");
+		 assertEquals(VehicleStatus.RENTED, vehicleRepository.findById("V001").getStatus());
+	}
+	
+	@Test
+	void testMarkAsRentedVehicleNotFound() {
+		assertThrows(IllegalArgumentException.class, () -> { vehicleService.markAsRented("XXX"); });
 
-}
+
+		
+		
+	}
+	@Test
+	void testMarkAsRentedAlreadyRented() {	
+		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020);
+		vehicleRepository.addVehicle(v1);
+	 vehicleService.markAsRented("V001");
+	 vehicleService.markAsRented("V001");
+	 assertEquals(VehicleStatus.RENTED, vehicleRepository.findById("V001").getStatus());
+
+	}
+		
+	@Test
+	void testMarkAsAvailableSuccess() {
+		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020);
+		vehicleRepository.addVehicle(v1);
+		 vehicleService.markAsRented("V001");
+		 vehicleService.markAsAvailable("V001");
+		 assertEquals(VehicleStatus.AVAILABLE, vehicleRepository.findById("V001").getStatus());
+
+		
+		
+	}
+	@Test
+	void testMarkAsAvailableVehicleNotFound() {
+		assertThrows(IllegalArgumentException.class, () -> { vehicleService.markAsAvailable("XXX"); });
+
+
+		
+	}
+	@Test
+	void testMarkAsAvailableAlreadyAvailable() {
+		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020);
+		vehicleRepository.addVehicle(v1);
+		vehicleService.markAsAvailable("V001");
+		assertEquals(VehicleStatus.AVAILABLE, vehicleRepository.findById("V001").getStatus());
+	}
+	
+	}
+
+
+

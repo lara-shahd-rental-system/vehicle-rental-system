@@ -2,6 +2,7 @@ package com.rental.service;
 
 import java.util.List;
 import com.rental.domain.model.Vehicle;
+import com.rental.domain.model.VehicleStatus;
 import com.rental.exception.UnauthorizedAccessException;
 import com.rental.persistence.VehicleRepository;
 
@@ -24,5 +25,25 @@ public class VehicleService {
 		return vehicleRepository.findAvailable();
 
 	}
+	public void markAsRented(String vehicleId) {
+		Vehicle vehicle = vehicleRepository.findById(vehicleId);
 
+		if (vehicle == null) {
+		    throw new IllegalArgumentException("Vehicle not found: " + vehicleId);
+		}
+		vehicle.setStatus(VehicleStatus.RENTED);
+
+	}
+
+	
+	
+	public void markAsAvailable(String vehicleId) {
+		
+		Vehicle vehicle = vehicleRepository.findById(vehicleId);
+
+		if (vehicle == null) {
+		    throw new IllegalArgumentException("Vehicle not found: " + vehicleId);
+		}
+		vehicle.setStatus(VehicleStatus.AVAILABLE );
+	}
 }
