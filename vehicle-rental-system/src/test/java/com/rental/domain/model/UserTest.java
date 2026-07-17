@@ -184,5 +184,19 @@ public class UserTest
         });
         assertEquals("Role cannot be null or empty", exception.getMessage());
     }
-    
+    // new test 
+    @Test
+    public void testConstructorWithEmail_SetsEmailCorrectly()
+    {
+        User userWithEmail = new User("lara123", "pass123", "ENGINEER", "lara@email.com");
+        assertEquals("lara@email.com", userWithEmail.getEmail());
+    }
+    // from sprint  5 
+    @Test
+    public void testFullConstructor_SetsAgeAndLicenseTypeCorrectly()
+    {
+        User user = new User("lara123", "pass123", "ENGINEER", "lara@email.com", 25, "STANDARD");
+        assertEquals(25, user.getAge());
+        assertEquals("STANDARD", user.getLicenseType());
+    }
 }
