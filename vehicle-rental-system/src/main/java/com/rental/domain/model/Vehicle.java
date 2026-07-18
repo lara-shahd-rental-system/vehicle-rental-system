@@ -32,7 +32,7 @@ public class Vehicle {
 	 * @throws IllegalArgumentException if any parameter is invalid
 	 */
 
-	public Vehicle(String vehicleId, String brand, String model, int year, double dailyRate)
+	public Vehicle(String vehicleId, String brand, String model, int year, double dailyRate) {
 		if (vehicleId == null || vehicleId.isEmpty()) {
 			throw new IllegalArgumentException("Vehicle ID cannot be null or empty");
 		}
@@ -216,6 +216,15 @@ public class Vehicle {
 		Vehicle other = (Vehicle) x;
 		return this.vehicleId.equals(other.vehicleId);
 
+	}
+
+	/**
+	 * Returns the daily rental rate for this vehicle.
+	 *
+	 * @return the daily rate
+	 */
+	public double getDailyRate() {
+		return dailyRate;
 	}
 
 }
