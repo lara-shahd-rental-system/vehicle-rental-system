@@ -5,6 +5,8 @@ package com.rental.service;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.rental.domain.model.Car;
 import com.rental.domain.model.Vehicle;
 import com.rental.domain.model.VehicleStatus;
 public class StatusBasedCheckStrategyTest {
@@ -17,20 +19,20 @@ public class StatusBasedCheckStrategyTest {
 
 	@Test
 	void testIsBookingAllowedWhenAvailable() {
-		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020, 50.0);
+		Vehicle v1 = new Car("V001", "BMW", "X5", 2020, 50.0);
 		assertTrue(strategy.isBookingAllowed(v1));
 	}
 
 	@Test
 	void testIsBookingNotAllowedWhenRented() {
-		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020, 50.0);
+		Vehicle v1 = new Car("V001", "BMW", "X5", 2020, 50.0);
 		v1.setStatus(VehicleStatus.RENTED);
 		assertFalse(strategy.isBookingAllowed(v1));
 	}
 
 	@Test
 	void testIsBookingAllowedAfterReturn() {
-		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020, 50.0);
+		Vehicle v1 = new Car("V001", "BMW", "X5", 2020, 50.0);
 		v1.setStatus(VehicleStatus.RENTED);
 		v1.setStatus(VehicleStatus.AVAILABLE);
 		assertTrue(strategy.isBookingAllowed(v1));

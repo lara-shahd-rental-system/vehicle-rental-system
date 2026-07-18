@@ -3,6 +3,8 @@ package com.rental.persistence;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.rental.domain.model.Car;
 import com.rental.domain.model.Vehicle;
 import com.rental.domain.model.VehicleStatus;
 import java.util.List;
@@ -22,9 +24,9 @@ class VehicleRepositoryTest {
 	@BeforeEach
 	void setUp() {
 	    repository = new VehicleRepository();
-	    vehicle1 = new Vehicle("V001", "BMW", "EE", 2025, 50.0);
-	    vehicle2 = new Vehicle("V002", "Toyota", "Camry", 2022, 50.0);
-	    vehicle3 = new Vehicle("V003", "Honda", "Civic", 2021, 50.0);
+	    vehicle1 = new Car("V001", "BMW", "EE", 2025, 50.0);
+	    vehicle2 = new Car("V002", "Toyota", "Camry", 2022, 50.0);
+	    vehicle3 = new Car("V003", "Honda", "Civic", 2021, 50.0);
 	}
 	
 	

@@ -1,10 +1,13 @@
 package com.rental.domain.model;
+import com.rental.exception.RentalException;
+
 
 /**
  * Represents a vehicle in the rental system.
  */
-public class Vehicle {
-
+public abstract class Vehicle{
+	
+	
 	/** The unique identifier for this vehicle. */
 	private String vehicleId;
 
@@ -32,7 +35,7 @@ public class Vehicle {
 	 * @throws IllegalArgumentException if any parameter is invalid
 	 */
 
-	public Vehicle(String vehicleId, String brand, String model, int year, double dailyRate)
+	public Vehicle(String vehicleId, String brand, String model, int year, double dailyRate) {
 		if (vehicleId == null || vehicleId.isEmpty()) {
 			throw new IllegalArgumentException("Vehicle ID cannot be null or empty");
 		}
@@ -107,7 +110,9 @@ public class Vehicle {
 
 	}
 
-	
+	public double getDailyRate() {
+	    return dailyRate;
+	}
 	
 	/**
 	 * Returns the current rental status.
@@ -217,5 +222,9 @@ public class Vehicle {
 		return this.vehicleId.equals(other.vehicleId);
 
 	}
+	
+	
+	public abstract void validateEligibility(User user) throws RentalException;
+
 
 }

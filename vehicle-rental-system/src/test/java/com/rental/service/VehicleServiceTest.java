@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import com.rental.exception.UnauthorizedAccessException;
+import com.rental.domain.model.Car;
 import com.rental.domain.model.User;
 import com.rental.persistence.UserRepository;
 import com.rental.persistence.VehicleRepository;
@@ -35,8 +36,8 @@ class VehicleServiceTest {
 	@Test
 	void testGetAvailableVehiclesWhenLoggedIn()  {
 		authService.login("admin", "admin123");
-		vehicleRepository.addVehicle(new Vehicle("V001", "BMW", "X5", 2020,50.0));
-		vehicleRepository.addVehicle(new Vehicle("V002", "Toyota", "Camry", 2022,50.0));
+		vehicleRepository.addVehicle(new Car("V001", "BMW", "X5", 2020,50.0));
+		vehicleRepository.addVehicle(new Car("V002", "Toyota", "Camry", 2022,50.0));
 		List<Vehicle> result = vehicleService.getAvailableVehicles();
 		assertEquals(2, result.size());
 	}
@@ -53,8 +54,8 @@ class VehicleServiceTest {
 	void testGetAvailableVehiclesWhenAllRented()  {
 
 		authService.login("admin", "admin123");
-		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020,50.0);
-		Vehicle v2 = new Vehicle("V002", "Toyota", "Camry", 2022,50.0);
+		Car v1 = new Car("V001", "BMW", "X5", 2020,50.0);
+		Car v2 = new Car("V002", "Toyota", "Camry", 2022,50.0);
 		vehicleRepository.addVehicle(v1);
 		vehicleRepository.addVehicle(v2);
 		v1.setStatus(VehicleStatus.RENTED);
@@ -74,9 +75,9 @@ class VehicleServiceTest {
 	@Test
 	void testGetAvailableVehiclesWithMixedStatuses() {
 		authService.login("admin", "admin123");
-		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020,50.0);
-		Vehicle v2 = new Vehicle("V002", "Toyota", "Camry", 2022,50.0);
-		Vehicle v3 = new Vehicle("V003", "Toyota", "Camry", 2020,50.0);
+		Vehicle v1 = new Car("V001", "BMW", "X5", 2020,50.0);
+		Vehicle v2 = new Car("V002", "Toyota", "Camry", 2022,50.0);
+		Vehicle v3 = new Car("V003", "Toyota", "Camry", 2020,50.0);
 		vehicleRepository.addVehicle(v1);
 		vehicleRepository.addVehicle(v2);
 		vehicleRepository.addVehicle(v3);
@@ -84,7 +85,7 @@ class VehicleServiceTest {
 
 		assertEquals(2, vehicleService.getAvailableVehicles().size());
 
-	}
+	} 
 
 	@Test
 	void testGetAvailableVehiclesAfterLogout() {
@@ -98,7 +99,7 @@ class VehicleServiceTest {
 	
 	@Test
 	void testMarkAsRentedSuccess() {
-		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020,50.0);
+		Vehicle v1 = new Car("V001", "BMW", "X5", 2020,50.0);
 		vehicleRepository.addVehicle(v1);
 		 vehicleService.markAsRented("V001");
 		 assertEquals(VehicleStatus.RENTED, vehicleRepository.findById("V001").getStatus());
@@ -114,7 +115,7 @@ class VehicleServiceTest {
 	}
 	@Test
 	void testMarkAsRentedAlreadyRented() {	
-		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020,50.0);
+		Vehicle v1 = new Car("V001", "BMW", "X5", 2020,50.0);
 		vehicleRepository.addVehicle(v1);
 	 vehicleService.markAsRented("V001");
 	 vehicleService.markAsRented("V001");
@@ -124,7 +125,7 @@ class VehicleServiceTest {
 		
 	@Test
 	void testMarkAsAvailableSuccess() {
-		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020,50.0);
+		Vehicle v1 = new Car("V001", "BMW", "X5", 2020,50.0);
 		vehicleRepository.addVehicle(v1);
 		 vehicleService.markAsRented("V001");
 		 vehicleService.markAsAvailable("V001");
@@ -142,7 +143,7 @@ class VehicleServiceTest {
 	}
 	@Test
 	void testMarkAsAvailableAlreadyAvailable() {
-		Vehicle v1 = new Vehicle("V001", "BMW", "X5", 2020,50.0);
+		Vehicle v1 = new Car("V001", "BMW", "X5", 2020,50.0);
 		vehicleRepository.addVehicle(v1);
 		vehicleService.markAsAvailable("V001");
 		assertEquals(VehicleStatus.AVAILABLE, vehicleRepository.findById("V001").getStatus());

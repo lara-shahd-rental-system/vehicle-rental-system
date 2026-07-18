@@ -24,7 +24,7 @@ public class VehicleTest {
 
 	@BeforeEach
 	void setUp() throws Exception {
-		vehicle = new Vehicle("1532", "BMW", "EE", 2025, 50.0);
+		vehicle = new Car("1532", "BMW", "EE", 2025, 50.0);
 
 	}
 
@@ -128,7 +128,7 @@ public class VehicleTest {
 	@Test
 	public void testYearZero() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			new Vehicle("1532", "BMW", "EE", 0, 50.0);
+			new Car("1532", "BMW", "EE", 0, 50.0);
 		});
 
 	}
@@ -138,7 +138,7 @@ public class VehicleTest {
 	@Test
 	public void testNegativeYear() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			new Vehicle("1532", "BMW", "EE", -5, 50.0);
+			new Car("1532", "BMW", "EE", -5, 50.0);
 		});
 
 	}
@@ -148,7 +148,7 @@ public class VehicleTest {
 	@Test
 	public void testEmptyBrand() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			new Vehicle("1532", "", "EE", 2025, 50.0);
+			new Car("1532", "", "EE", 2025, 50.0);
 		});
 	}
 
@@ -262,7 +262,7 @@ public class VehicleTest {
 	@Test
 	public void testEqualsSameId() {
 
-		Vehicle vehicle2 = new Vehicle("1532", "Toyota", "Corolla", 2020, 50.0);
+		Vehicle vehicle2 = new Car("1532", "Toyota", "Corolla", 2020, 50.0);
 		assertEquals(vehicle, vehicle2);
 	}
 
@@ -270,7 +270,7 @@ public class VehicleTest {
 
 	@Test
 	public void testEqualsDifferentId() {
-		Vehicle vehicle2 = new Vehicle("9999", "BMW", "EE", 2025, 50.0);
+		Vehicle vehicle2 = new Car("9999", "BMW", "EE", 2025, 50.0);
 		assertNotEquals(vehicle, vehicle2);
 	}
 
