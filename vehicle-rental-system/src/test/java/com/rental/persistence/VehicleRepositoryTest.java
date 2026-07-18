@@ -22,9 +22,9 @@ class VehicleRepositoryTest {
 	@BeforeEach
 	void setUp() {
 	    repository = new VehicleRepository();
-	    vehicle1 = new Vehicle("V001", "BMW", "X5", 2020);
-	    vehicle2 = new Vehicle("V002", "Toyota", "Camry", 2022);
-	    vehicle3 = new Vehicle("V003", "Honda", "Civic", 2021);
+	    vehicle1 = new Vehicle("V001", "BMW", "EE", 2025, 50.0);
+	    vehicle2 = new Vehicle("V002", "Toyota", "Camry", 2022, 50.0);
+	    vehicle3 = new Vehicle("V003", "Honda", "Civic", 2021, 50.0);
 	}
 	
 	
@@ -173,7 +173,7 @@ assertEquals("V001", found.getVehicleId());
 
 
 
-
+ 
 		}
 		
 		@Test

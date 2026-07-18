@@ -20,6 +20,8 @@ public class Vehicle {
 	/** The current rental status of the vehicle. */
 	private VehicleStatus status;
 
+	private double dailyRate;
+	
 	/**
 	 * Creates a new Vehicle with the given details and sets status to AVAILABLE.
 	 *
@@ -30,7 +32,7 @@ public class Vehicle {
 	 * @throws IllegalArgumentException if any parameter is invalid
 	 */
 
-	public Vehicle(String vehicleId, String brand, String model, int year) {
+	public Vehicle(String vehicleId, String brand, String model, int year, double dailyRate)
 		if (vehicleId == null || vehicleId.isEmpty()) {
 			throw new IllegalArgumentException("Vehicle ID cannot be null or empty");
 		}
@@ -44,11 +46,17 @@ public class Vehicle {
 		if (year < 1886) {
 			throw new IllegalArgumentException("Invalid year");
 		}
-
+		if (dailyRate <= 0) {
+		    throw new IllegalArgumentException("Daily rate must be positive");
+		}
+		
 		this.vehicleId = vehicleId;
 		this.brand = brand;
 		this.model = model;
 		this.year = year;
+		this.dailyRate = dailyRate;
+
+		
 		status = VehicleStatus.AVAILABLE;
 	}
 
@@ -99,6 +107,8 @@ public class Vehicle {
 
 	}
 
+	
+	
 	/**
 	 * Returns the current rental status.
 	 *
@@ -184,7 +194,7 @@ public class Vehicle {
 		}
 		status = VehicleStatus.AVAILABLE;
 
-	}
+	} 
 
 	/**
 	 * Checks equality based on vehicle ID.

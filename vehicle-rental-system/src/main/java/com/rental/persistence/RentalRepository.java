@@ -17,4 +17,5 @@ public interface RentalRepository
     List<Rental> findByVehicleId(String vehicleId);
 
     boolean hasActiveRentalForVehicle(String vehicleId);
+    Rental findById(String rentalId);
 }

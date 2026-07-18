@@ -8,7 +8,7 @@ import com.rental.domain.model.Rental;
 import com.rental.exception.RentalException;
 import com.rental.persistence.RentalRepository;
 import com.rental.persistence.VehicleRepository;
-
+import com.rental.domain.model.RentalStatus;
 
 public class RentalService {
 
@@ -18,6 +18,8 @@ public class RentalService {
 	private AuthenticationService authenticationService;
 	private DoubleBookingCheckStrategy doubleBookingCheckStrategy;
 	private DateProvider dateProvider;	
+	private RentalPricingStrategy pricingStrategy;
+	private LatePenaltyPolicy latePenaltyPolicy;
 	
 	private static final String MSG_NOT_LOGGED_IN = "User must be logged in to rent a vehicle";
 	private static final String MSG_VEHICLE_NOT_FOUND  =  "Vehicle not found";
@@ -25,18 +27,23 @@ public class RentalService {
 	private static final String MSG_END_DATE_INVALID  = "End date must be after start date" ;
 	private static final String MSG_START_DATE_PAST  = "Start date cannot be in the past" ;
 	private static final String MSG_DURATION_INVALID  ="Rental duration must be between 1 and 30 days" ;
-
+	private static final String MSG_RENTAL_NOT_FOUND = "Rental not found";
 	
-	public RentalService(RentalRepository rentalRepository, VehicleRepository vehicleRepository, 
-            VehicleService vehicleService, AuthenticationService authenticationService,
-            DoubleBookingCheckStrategy doubleBookingCheckStrategy, DateProvider dateProvider) {
-		this.rentalRepository = rentalRepository;
-		this.vehicleRepository = vehicleRepository;
-		this.vehicleService = vehicleService;
-		this.authenticationService = authenticationService;
-		this.doubleBookingCheckStrategy = doubleBookingCheckStrategy;
-		this.dateProvider = dateProvider;
+	public RentalService(RentalRepository rentalRepository, VehicleRepository vehicleRepository,
+	        VehicleService vehicleService, AuthenticationService authenticationService,
+	        DoubleBookingCheckStrategy doubleBookingCheckStrategy, DateProvider dateProvider,
+	        RentalPricingStrategy pricingStrategy, LatePenaltyPolicy latePenaltyPolicy) {
+	    this.rentalRepository = rentalRepository;
+	    this.vehicleRepository = vehicleRepository;
+	    this.vehicleService = vehicleService;
+	    this.authenticationService = authenticationService;
+	    this.doubleBookingCheckStrategy = doubleBookingCheckStrategy;
+	    this.dateProvider = dateProvider;
+	    this.pricingStrategy = pricingStrategy;
+	    this.latePenaltyPolicy = latePenaltyPolicy;
 	}
+	
+	
 	public Rental rentVehicle(String username, String vehicleId, LocalDate startDate, LocalDate endDate) throws RentalException{
 		
 		if (!authenticationService.isLoggedIn()) {
@@ -68,5 +75,36 @@ public class RentalService {
 		return rental;
 	}
 
+	
+	public double returnVehicle(String rentalId, LocalDate actualReturnDate) throws RentalException {
+	    Rental rental = rentalRepository.findById(rentalId);
+	    if (rental == null) {
+	        throw new RentalException(MSG_RENTAL_NOT_FOUND);
+	    }
 
+	    Vehicle vehicle = vehicleRepository.findById(rental.getVehicleId());
+
+	    double cost = pricingStrategy.calculateCost(rental, vehicle);
+	    double penalty = latePenaltyPolicy.calculatePenalty(rental, actualReturnDate);
+
+	    rental.setStatus(RentalStatus.COMPLETED);
+	    vehicleService.markAsAvailable(rental.getVehicleId());
+
+	    return cost + penalty;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }
+
+
+
+
+
+

@@ -88,4 +88,22 @@ public class InMemoryRentalRepository implements RentalRepository
         }
         return false;
     }
+    
+    
+    @Override
+    public Rental findById(String rentalId)
+    {
+        if (rentalId == null || rentalId.trim().isEmpty())
+        {
+            throw new IllegalArgumentException("Rental ID cannot be null or empty");
+        }
+        for (Rental rental : rentals)
+        {
+            if (rental.getRentalId().equals(rentalId))
+            {
+                return rental;
+            }
+        }
+        return null;
+    }
 }

@@ -1,23 +1,18 @@
 package com.rental.service;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
 import java.time.LocalDate;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import com.rental.domain.model.Rental;
+import com.rental.domain.model.RentalStatus;
 import com.rental.domain.model.Vehicle;
 import com.rental.exception.RentalException;
 import com.rental.persistence.RentalRepository;
 import com.rental.persistence.VehicleRepository;
 
-
 public class RentalServiceTest {
-	
-	
+
 	private RentalService rentalService;
 	private RentalRepository rentalRepository;
 	private VehicleRepository vehicleRepository;
@@ -26,164 +21,173 @@ public class RentalServiceTest {
 	private DoubleBookingCheckStrategy doubleBookingCheckStrategy;
 	private DateProvider dateProvider;
 	private Vehicle mockVehicle;
-	
-	
+	private RentalPricingStrategy pricingStrategy;
+	private LatePenaltyPolicy latePenaltyPolicy;
+
 	@BeforeEach
 	void setUp() {
-		
-		
-	    rentalRepository = mock(RentalRepository.class);
-	    vehicleRepository = mock(VehicleRepository.class);
-	    vehicleService = mock(VehicleService.class);
-	    authenticationService = mock(AuthenticationService.class);
-	    doubleBookingCheckStrategy = mock(DoubleBookingCheckStrategy.class);
-	    dateProvider = mock(DateProvider.class);
-	    mockVehicle = mock(Vehicle.class);
+		rentalRepository = mock(RentalRepository.class);
+		vehicleRepository = mock(VehicleRepository.class);
+		vehicleService = mock(VehicleService.class);
+		authenticationService = mock(AuthenticationService.class);
+		doubleBookingCheckStrategy = mock(DoubleBookingCheckStrategy.class);
+		dateProvider = mock(DateProvider.class);
+		pricingStrategy = mock(RentalPricingStrategy.class);
+		latePenaltyPolicy = mock(LatePenaltyPolicy.class);
+		mockVehicle = mock(Vehicle.class);
 
-	    rentalService = new RentalService(rentalRepository, vehicleRepository,
-	        vehicleService, authenticationService, doubleBookingCheckStrategy, dateProvider);
+		rentalService = new RentalService(rentalRepository, vehicleRepository,
+				vehicleService, authenticationService, doubleBookingCheckStrategy, dateProvider,
+				pricingStrategy, latePenaltyPolicy);
 	}
-	
-	
+
 	@Test
-	
 	void testRentVehicleSuccess() throws RentalException {
-	    LocalDate today = LocalDate.of(2026, 7, 1);
-	    LocalDate startDate = LocalDate.of(2026, 7, 5);
-	    LocalDate endDate = LocalDate.of(2026, 7, 10);
+		LocalDate today = LocalDate.of(2026, 7, 1);
+		LocalDate startDate = LocalDate.of(2026, 7, 5);
+		LocalDate endDate = LocalDate.of(2026, 7, 10);
 
-	    when(authenticationService.isLoggedIn()).thenReturn(true);
-	    when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
-	    when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
-	    when(dateProvider.getToday()).thenReturn(today);
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
+		when(dateProvider.getToday()).thenReturn(today);
 
-	    
-	    Rental result = rentalService.rentVehicle("admin", "V001", startDate, endDate);
+		Rental result = rentalService.rentVehicle("admin", "V001", startDate, endDate);
 
-	    
-	    assertNotNull(result);
-	    verify(rentalRepository).addRental(any(Rental.class));
-	    verify(vehicleService).markAsRented("V001");
+		assertNotNull(result);
+		verify(rentalRepository).addRental(any(Rental.class));
+		verify(vehicleService).markAsRented("V001");
 	}
-	
+
 	@Test
-	
 	void testRentVehicleWhenNotLoggedIn() {
-	    when(authenticationService.isLoggedIn()).thenReturn(false);
+		when(authenticationService.isLoggedIn()).thenReturn(false);
 
-	    assertThrows(RentalException.class, () -> {
-	        rentalService.rentVehicle("admin", "V001", LocalDate.now(), LocalDate.now().plusDays(3));});
+		assertThrows(RentalException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", LocalDate.now(), LocalDate.now().plusDays(3));
+		});
 
-	    verify(vehicleRepository, never()).findById(any());
+		verify(vehicleRepository, never()).findById(any());
 	}
-	
+
 	@Test
-	
 	void testRentVehicleWhenVehicleNotFound() {
-	    when(authenticationService.isLoggedIn()).thenReturn(true);
-	    when(vehicleRepository.findById("V001")).thenReturn(null);
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(null);
 
-	    assertThrows(RentalException.class, () -> {
-	        rentalService.rentVehicle("admin", "V001", LocalDate.now(), LocalDate.now().plusDays(3)); });
+		assertThrows(RentalException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", LocalDate.now(), LocalDate.now().plusDays(3));
+		});
 	}
-	
+
 	@Test
-	
 	void testRentVehicleWhenNotAvailable() {
-	    when(authenticationService.isLoggedIn()).thenReturn(true);
-	    when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
-	    when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(false);
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(false);
 
-	    assertThrows(RentalException.class, () -> {
-	        rentalService.rentVehicle("admin", "V001", LocalDate.now(), LocalDate.now().plusDays(3)); });
+		assertThrows(RentalException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", LocalDate.now(), LocalDate.now().plusDays(3));
+		});
 
-	    
-	      verify(vehicleService, never()).markAsRented(any());
+		verify(vehicleService, never()).markAsRented(any());
 	}
-	
+
 	@Test
-	
 	void testRentVehicleEndDateBeforeStartDate() {
-	    when(authenticationService.isLoggedIn()).thenReturn(true);
-	    when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
-	    when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
 
-	    
-	    LocalDate startDate = LocalDate.of(2026, 7, 10);
-	    LocalDate endDate = LocalDate.of(2026, 7, 5);
+		LocalDate startDate = LocalDate.of(2026, 7, 10);
+		LocalDate endDate = LocalDate.of(2026, 7, 5);
 
-	    
-	    
-	    assertThrows(IllegalArgumentException.class, () -> {
-	        rentalService.rentVehicle("admin", "V001", startDate, endDate); });
+		assertThrows(IllegalArgumentException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", startDate, endDate);
+		});
 	}
-	
-	
+
 	@Test
-	
 	void testRentVehicleStartDateInPast() {
-	    when(authenticationService.isLoggedIn()).thenReturn(true);
-	    when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
-	    when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
-	    when(dateProvider.getToday()).thenReturn(LocalDate.of(2026, 7, 10));
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
+		when(dateProvider.getToday()).thenReturn(LocalDate.of(2026, 7, 10));
 
-	    
-	    LocalDate startDate = LocalDate.of(2026, 7, 5);
-	    LocalDate endDate = LocalDate.of(2026, 7, 15);
-	    assertThrows(IllegalArgumentException.class, () -> {
-	        rentalService.rentVehicle("admin", "V001", startDate, endDate); });
+		LocalDate startDate = LocalDate.of(2026, 7, 5);
+		LocalDate endDate = LocalDate.of(2026, 7, 15);
+
+		assertThrows(IllegalArgumentException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", startDate, endDate);
+		});
 	}
-	
+
 	@Test
 	void testRentVehicleDurationTooShort() {
-	    when(authenticationService.isLoggedIn()).thenReturn(true);
-	    when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
-	    when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
-	    when(dateProvider.getToday()).thenReturn(LocalDate.of(2026, 7, 1));
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
+		when(dateProvider.getToday()).thenReturn(LocalDate.of(2026, 7, 1));
 
-	    
-	    LocalDate startDate = LocalDate.of(2026, 7, 5);
-	    LocalDate endDate = LocalDate.of(2026, 7, 5);
+		LocalDate startDate = LocalDate.of(2026, 7, 5);
+		LocalDate endDate = LocalDate.of(2026, 7, 5);
 
-	    
-	    assertThrows(IllegalArgumentException.class, () -> {
-	        rentalService.rentVehicle("admin", "V001", startDate, endDate);  });
+		assertThrows(IllegalArgumentException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", startDate, endDate);
+		});
 	}
-	
-	
+
 	@Test
 	void testRentVehicleDurationTooLong() {
-	    when(authenticationService.isLoggedIn()).thenReturn(true);
-	    when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
-	    when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
-	    when(dateProvider.getToday()).thenReturn(LocalDate.of(2026, 7, 1));
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
+		when(dateProvider.getToday()).thenReturn(LocalDate.of(2026, 7, 1));
 
-	    LocalDate startDate = LocalDate.of(2026, 7, 5);
-	    LocalDate endDate = LocalDate.of(2026, 8, 10); // 36 يوم فرق
+		LocalDate startDate = LocalDate.of(2026, 7, 5);
+		LocalDate endDate = LocalDate.of(2026, 8, 10);
 
-	    assertThrows(RentalException.class, () -> {
-	        rentalService.rentVehicle("admin", "V001", startDate, endDate);
-	    });
+		assertThrows(RentalException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", startDate, endDate);
+		});
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+	@Test
+	void testReturnVehicleSuccess() throws RentalException {
+		Rental mockRental = mock(Rental.class);
+		when(mockRental.getVehicleId()).thenReturn("V001");
+		when(rentalRepository.findById("R001")).thenReturn(mockRental);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(pricingStrategy.calculateCost(mockRental, mockVehicle)).thenReturn(150.0);
+		when(latePenaltyPolicy.calculatePenalty(eq(mockRental), any(LocalDate.class))).thenReturn(0.0);
+
+		double total = rentalService.returnVehicle("R001", LocalDate.of(2026, 7, 6));
+
+		assertEquals(150.0, total);
+		verify(mockRental).setStatus(RentalStatus.COMPLETED);
+		verify(vehicleService).markAsAvailable("V001");
+	}
+
+	@Test
+	void testReturnVehicleRentalNotFound() {
+		when(rentalRepository.findById("R999")).thenReturn(null);
+
+		assertThrows(RentalException.class, () -> {
+			rentalService.returnVehicle("R999", LocalDate.now());
+		});
+	}
+
+	@Test
+	void testReturnVehicleWithPenalty() throws RentalException {
+		Rental mockRental = mock(Rental.class);
+		when(mockRental.getVehicleId()).thenReturn("V001");
+		when(rentalRepository.findById("R001")).thenReturn(mockRental);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(pricingStrategy.calculateCost(mockRental, mockVehicle)).thenReturn(150.0);
+		when(latePenaltyPolicy.calculatePenalty(eq(mockRental), any(LocalDate.class))).thenReturn(40.0);
+
+		double total = rentalService.returnVehicle("R001", LocalDate.of(2026, 7, 8));
+
+		assertEquals(190.0, total);
+	}
 }
