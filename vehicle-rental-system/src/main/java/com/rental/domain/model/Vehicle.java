@@ -227,4 +227,13 @@ public abstract class Vehicle{
 	public abstract void validateEligibility(User user) throws RentalException;
 
 
+	/**
+	 * Returns the daily rental rate for this vehicle.
+	 *
+	 * @return the daily rate
+	 */
+	public double getDailyRate() {
+		return dailyRate;
+	}
+
 }
