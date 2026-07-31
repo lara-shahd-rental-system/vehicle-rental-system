@@ -1,141 +1,200 @@
 package com.rental.service;
-
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import com.rental.domain.model.Vehicle;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import com.rental.domain.model.Rental;
+import com.rental.domain.model.RentalStatus;
+import com.rental.domain.model.Vehicle;
 import com.rental.exception.RentalException;
 import com.rental.persistence.RentalRepository;
 import com.rental.persistence.VehicleRepository;
-import com.rental.domain.model.RentalStatus;
 
-public class RentalServicepublic class RentalServiceTest  {
-    private RentalRepository rentalRepository;
-    private VehicleRepository vehicleRepository;
-    private VehicleService vehicleService;
-    private AuthenticationService authenticationService;
-    private DoubleBookingCheckStrategy doubleBookingCheckStrategy;
-    private DateProvider dateProvider;
-    private RentalPricingStrategy pricingStrategy;
-    private LatePenaltyPolicy latePenaltyPolicy;
+public class RentalServiceTest {
 
-    private static final String MSG_NOT_LOGGED_IN = "User must be logged in to rent a vehicle";
-    private static final String MSG_VEHICLE_NOT_FOUND = "Vehicle not found";
-    private static final String MSG_VEHICLE_NOT_AVAILABLE = "Vehicle is not available";
-    private static final String MSG_END_DATE_INVALID = "End date must be after start date";
-    private static final String MSG_START_DATE_PAST = "Start date cannot be in the past";
-    private static final String MSG_DURATION_INVALID = "Rental duration must be between 1 and 30 days";
-    private static final String MSG_RENTAL_NOT_FOUND = "Rental not found";
+	private RentalService rentalService;
+	private RentalRepository rentalRepository;
+	private VehicleRepository vehicleRepository;
+	private VehicleService vehicleService;
+	private AuthenticationService authenticationService;
+	private DoubleBookingCheckStrategy doubleBookingCheckStrategy;
+	private DateProvider dateProvider;
+	private Vehicle mockVehicle;
+	private RentalPricingStrategy pricingStrategy;
+	private LatePenaltyPolicy latePenaltyPolicy;
 
-    // Constructor is now private - objects must be created via Builder
-    private RentalService(Builder builder) {
-        this.rentalRepository = builder.rentalRepository;
-        this.vehicleRepository = builder.vehicleRepository;
-        this.vehicleService = builder.vehicleService;
-        this.authenticationService = builder.authenticationService;
-        this.doubleBookingCheckStrategy = builder.doubleBookingCheckStrategy;
-        this.dateProvider = builder.dateProvider;
-        this.pricingStrategy = builder.pricingStrategy;
-        this.latePenaltyPolicy = builder.latePenaltyPolicy;
-    }
+	@BeforeEach
+	void setUp() {
+		rentalRepository = mock(RentalRepository.class);
+		vehicleRepository = mock(VehicleRepository.class);
+		vehicleService = mock(VehicleService.class);
+		authenticationService = mock(AuthenticationService.class);
+		doubleBookingCheckStrategy = mock(DoubleBookingCheckStrategy.class);
+		dateProvider = mock(DateProvider.class);
+		pricingStrategy = mock(RentalPricingStrategy.class);
+		latePenaltyPolicy = mock(LatePenaltyPolicy.class);
+		mockVehicle = mock(Vehicle.class);
 
-    public Rental rentVehicle(String username, String vehicleId, LocalDate startDate, LocalDate endDate) throws RentalException {
+		rentalService = new RentalService.Builder()
+				.rentalRepository(rentalRepository)
+				.vehicleRepository(vehicleRepository)
+				.vehicleService(vehicleService)
+				.authenticationService(authenticationService)
+				.doubleBookingCheckStrategy(doubleBookingCheckStrategy)
+				.dateProvider(dateProvider)
+				.pricingStrategy(pricingStrategy)
+				.latePenaltyPolicy(latePenaltyPolicy)
+				.build();
+	}
 
-        if (!authenticationService.isLoggedIn()) {
-            throw new RentalException(MSG_NOT_LOGGED_IN);
-        }
+	@Test
+	void testRentVehicleSuccess() throws RentalException {
+		LocalDate today = LocalDate.of(2026, 7, 1);
+		LocalDate startDate = LocalDate.of(2026, 7, 5);
+		LocalDate endDate = LocalDate.of(2026, 7, 10);
 
-        Vehicle vehicle = vehicleRepository.findById(vehicleId);
-        if (vehicle == null) {
-            throw new RentalException(MSG_VEHICLE_NOT_FOUND);
-        }
-        if (!doubleBookingCheckStrategy.isBookingAllowed(vehicle)) {
-            throw new RentalException(MSG_VEHICLE_NOT_AVAILABLE);
-        }
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
+		when(dateProvider.getToday()).thenReturn(today);
 
-        if (!endDate.isAfter(startDate)) {
-            throw new IllegalArgumentException(MSG_END_DATE_INVALID);
-        }
-        if (startDate.isBefore(dateProvider.getToday())) {
-            throw new IllegalArgumentException(MSG_START_DATE_PAST);
-        }
+		Rental result = rentalService.rentVehicle("admin", "V001", startDate, endDate);
 
-        long durationDays = ChronoUnit.DAYS.between(startDate, endDate);
-        if (durationDays < 1 || durationDays > 30) {
-            throw new RentalException(MSG_DURATION_INVALID);
-        }
-        Rental rental = new Rental(vehicleId, username, startDate, endDate);
-        rentalRepository.addRental(rental);
-        vehicleService.markAsRented(vehicleId);
-        return rental;
-    }
+		assertNotNull(result);
+		verify(rentalRepository).addRental(any(Rental.class));
+		verify(vehicleService).markAsRented("V001");
+	}
 
-    public double returnVehicle(String rentalId, LocalDate actualReturnDate) throws RentalException {
-        Rental rental = rentalRepository.findById(rentalId);
-        if (rental == null) {
-            throw new RentalException(MSG_RENTAL_NOT_FOUND);
-        }
-        Vehicle vehicle = vehicleRepository.findById(rental.getVehicleId());
-        double cost = pricingStrategy.calculateCost(rental, vehicle);
-        double penalty = latePenaltyPolicy.calculatePenalty(rental, actualReturnDate);
-        rental.setStatus(RentalStatus.COMPLETED);
-        vehicleService.markAsAvailable(rental.getVehicleId());
-        return cost + penalty;
-    }
+	@Test
+	void testRentVehicleWhenNotLoggedIn() {
+		when(authenticationService.isLoggedIn()).thenReturn(false);
 
-    // Builder class - handles step-by-step construction of RentalService
-    public static class Builder {
-        private RentalRepository rentalRepository;
-        private VehicleRepository vehicleRepository;
-        private VehicleService vehicleService;
-        private AuthenticationService authenticationService;
-        private DoubleBookingCheckStrategy doubleBookingCheckStrategy;
-        private DateProvider dateProvider;
-        private RentalPricingStrategy pricingStrategy;
-        private LatePenaltyPolicy latePenaltyPolicy;
+		assertThrows(RentalException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", LocalDate.now(), LocalDate.now().plusDays(3));
+		});
 
-        public Builder rentalRepository(RentalRepository rentalRepository) {
-            this.rentalRepository = rentalRepository;
-            return this;
-        }
+		verify(vehicleRepository, never()).findById(any());
+	}
 
-        public Builder vehicleRepository(VehicleRepository vehicleRepository) {
-            this.vehicleRepository = vehicleRepository;
-            return this;
-        }
+	@Test
+	void testRentVehicleWhenVehicleNotFound() {
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(null);
 
-        public Builder vehicleService(VehicleService vehicleService) {
-            this.vehicleService = vehicleService;
-            return this;
-        }
+		assertThrows(RentalException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", LocalDate.now(), LocalDate.now().plusDays(3));
+		});
+	}
 
-        public Builder authenticationService(AuthenticationService authenticationService) {
-            this.authenticationService = authenticationService;
-            return this;
-        }
+	@Test
+	void testRentVehicleWhenNotAvailable() {
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(false);
 
-        public Builder doubleBookingCheckStrategy(DoubleBookingCheckStrategy doubleBookingCheckStrategy) {
-            this.doubleBookingCheckStrategy = doubleBookingCheckStrategy;
-            return this;
-        }
+		assertThrows(RentalException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", LocalDate.now(), LocalDate.now().plusDays(3));
+		});
 
-        public Builder dateProvider(DateProvider dateProvider) {
-            this.dateProvider = dateProvider;
-            return this;
-        }
+		verify(vehicleService, never()).markAsRented(any());
+	}
 
-        public Builder pricingStrategy(RentalPricingStrategy pricingStrategy) {
-            this.pricingStrategy = pricingStrategy;
-            return this;
-        }
+	@Test
+	void testRentVehicleEndDateBeforeStartDate() {
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
 
-        public Builder latePenaltyPolicy(LatePenaltyPolicy latePenaltyPolicy) {
-            this.latePenaltyPolicy = latePenaltyPolicy;
-            return this;
-        }
+		LocalDate startDate = LocalDate.of(2026, 7, 10);
+		LocalDate endDate = LocalDate.of(2026, 7, 5);
 
-        public RentalService build() {
-            return new RentalService(this);
-        }
-    }
+		assertThrows(IllegalArgumentException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", startDate, endDate);
+		});
+	}
+
+	@Test
+	void testRentVehicleStartDateInPast() {
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
+		when(dateProvider.getToday()).thenReturn(LocalDate.of(2026, 7, 10));
+
+		LocalDate startDate = LocalDate.of(2026, 7, 5);
+		LocalDate endDate = LocalDate.of(2026, 7, 15);
+
+		assertThrows(IllegalArgumentException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", startDate, endDate);
+		});
+	}
+
+	@Test
+	void testRentVehicleDurationTooShort() {
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
+		when(dateProvider.getToday()).thenReturn(LocalDate.of(2026, 7, 1));
+
+		LocalDate startDate = LocalDate.of(2026, 7, 5);
+		LocalDate endDate = LocalDate.of(2026, 7, 5);
+
+		assertThrows(IllegalArgumentException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", startDate, endDate);
+		});
+	}
+
+	@Test
+	void testRentVehicleDurationTooLong() {
+		when(authenticationService.isLoggedIn()).thenReturn(true);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(doubleBookingCheckStrategy.isBookingAllowed(mockVehicle)).thenReturn(true);
+		when(dateProvider.getToday()).thenReturn(LocalDate.of(2026, 7, 1));
+
+		LocalDate startDate = LocalDate.of(2026, 7, 5);
+		LocalDate endDate = LocalDate.of(2026, 8, 10);
+
+		assertThrows(RentalException.class, () -> {
+			rentalService.rentVehicle("admin", "V001", startDate, endDate);
+		});
+	}
+
+	@Test
+	void testReturnVehicleSuccess() throws RentalException {
+		Rental mockRental = mock(Rental.class);
+		when(mockRental.getVehicleId()).thenReturn("V001");
+		when(rentalRepository.findById("R001")).thenReturn(mockRental);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(pricingStrategy.calculateCost(mockRental, mockVehicle)).thenReturn(150.0);
+		when(latePenaltyPolicy.calculatePenalty(eq(mockRental), any(LocalDate.class))).thenReturn(0.0);
+
+		double total = rentalService.returnVehicle("R001", LocalDate.of(2026, 7, 6));
+
+		assertEquals(150.0, total);
+		verify(mockRental).setStatus(RentalStatus.COMPLETED);
+		verify(vehicleService).markAsAvailable("V001");
+	}
+
+	@Test
+	void testReturnVehicleRentalNotFound() {
+		when(rentalRepository.findById("R999")).thenReturn(null);
+
+		assertThrows(RentalException.class, () -> {
+			rentalService.returnVehicle("R999", LocalDate.now());
+		});
+	}
+
+	@Test
+	void testReturnVehicleWithPenalty() throws RentalException {
+		Rental mockRental = mock(Rental.class);
+		when(mockRental.getVehicleId()).thenReturn("V001");
+		when(rentalRepository.findById("R001")).thenReturn(mockRental);
+		when(vehicleRepository.findById("V001")).thenReturn(mockVehicle);
+		when(pricingStrategy.calculateCost(mockRental, mockVehicle)).thenReturn(150.0);
+		when(latePenaltyPolicy.calculatePenalty(eq(mockRental), any(LocalDate.class))).thenReturn(40.0);
+
+		double total = rentalService.returnVehicle("R001", LocalDate.of(2026, 7, 8));
+
+		assertEquals(190.0, total);
+	}
 }
