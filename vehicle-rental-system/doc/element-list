@@ -1,0 +1,4 @@
+com.rental.domain.model
+com.rental.exception
+com.rental.persistence
+com.rental.service
