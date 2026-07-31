@@ -110,10 +110,6 @@ public abstract class Vehicle{
 
 	}
 
-	public double getDailyRate() {
-	    return dailyRate;
-	}
-	
 	/**
 	 * Returns the current rental status.
 	 *
