@@ -1,16 +1,16 @@
 package com.rental.service;
-import com.rental.domain.model.Rental;
 
+import com.rental.domain.model.Rental;
+import java.util.logging.Logger;
 
 public class MockNotificationService implements NotificationService {
 
-	@Override
-	
+    private static final Logger logger = Logger.getLogger(MockNotificationService.class.getName());
+
+    @Override
     public void sendExpiryReminder(String recipientEmail, Rental rental) {
-        System.out.println("[MOCK EMAIL] To: " + recipientEmail
+        logger.info("[MOCK EMAIL] To: " + recipientEmail
             + " | Subject: Rental Expiry Reminder | Vehicle: " + rental.getVehicleId()
             + " | Return by: " + rental.getEndDate());
     }
 }
-	
-
