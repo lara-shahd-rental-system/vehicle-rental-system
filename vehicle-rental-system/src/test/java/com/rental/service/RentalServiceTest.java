@@ -9,7 +9,7 @@ import com.rental.persistence.RentalRepository;
 import com.rental.persistence.VehicleRepository;
 import com.rental.domain.model.RentalStatus;
 
-public class RentalService {
+public class RentalServicepublic class RentalServiceTest  {
     private RentalRepository rentalRepository;
     private VehicleRepository vehicleRepository;
     private VehicleService vehicleService;
